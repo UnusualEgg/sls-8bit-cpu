@@ -3,6 +3,8 @@
 
 #include "define_table.h"
 #include "label_table.h"
+#include <vector>
+#include <cstdint>
 
 namespace assembler {
 

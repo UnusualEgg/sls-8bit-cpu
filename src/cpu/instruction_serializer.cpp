@@ -20,9 +20,9 @@ uint8_t serialize_register_string(const std::string &reg) {
         return 0;
     } else if (reg == "B") {
         return 1;
-    } else if (reg == "L") {
+    } else if (reg == "C") {
         return 2;
-    } else if (reg == "U") {
+    } else if (reg == "D") {
         return 3;
     }
     throw std::invalid_argument("Unsupported register string: " + reg);
@@ -30,7 +30,7 @@ uint8_t serialize_register_string(const std::string &reg) {
 
 // format: opcode
 vector<uint8_t> serialize_basic_instruction(const uint8_t opcode) {
-    const uint8_t instruction_reg = opcode << 2;
+    const uint8_t instruction_reg = opcode << 4;
     return {instruction_reg};
 }
 
@@ -40,7 +40,7 @@ serialize_imm_type_instruction(const uint8_t opcode,
                                const std::vector<std::string> &tokens) {
     const uint8_t destination_reg = serialize_register_string(tokens[1]);
     const uint8_t immediate_val   = std::stoi(tokens[2]);
-    const uint8_t instruction_reg = (opcode << 2) | destination_reg;
+    const uint8_t instruction_reg = (opcode << 4) | destination_reg;
 
     return {instruction_reg, immediate_val};
 }
@@ -50,7 +50,7 @@ vector<uint8_t>
 serialize_reg_type_instruction(const uint8_t opcode,
                                const std::vector<std::string> &tokens) {
     const uint8_t destination_reg = serialize_register_string(tokens[1]);
-    const uint8_t instruction_reg = (opcode << 2) | destination_reg;
+    const uint8_t instruction_reg = (opcode << 4) | destination_reg;
 
     return {instruction_reg};
 }
@@ -59,12 +59,10 @@ serialize_reg_type_instruction(const uint8_t opcode,
 vector<uint8_t> serialize_load_address_type_instruction(
     const uint8_t opcode, const std::vector<std::string> &tokens) {
     const uint8_t destination_reg   = serialize_register_string(tokens[1]);
-    const uint16_t address          = std::stoi(tokens[2]);
-    const uint8_t lower_address_reg = address & 0xFF;
-    const uint8_t upper_address_reg = (address >> 8) & 0xFF;
-    const uint8_t instruction_reg   = (opcode << 2) | destination_reg;
+    const uint8_t address          = std::stoi(tokens[2]);
+    const uint8_t instruction_reg   = (opcode << 4) | destination_reg;
 
-    return {instruction_reg, lower_address_reg, upper_address_reg};
+    return {instruction_reg, address};
 }
 
 // format: opcode rs address
@@ -72,30 +70,25 @@ vector<uint8_t> serialize_store_address_type_instruction(
     const uint8_t opcode, const std::vector<std::string> &tokens) {
     const uint8_t source_reg = serialize_register_string(tokens[1]);
 
-    if (source_reg > 1) {
+    if (source_reg > 3) {
         throw std::invalid_argument("Cannot store register " +
                                     std::string(tokens[1]));
     }
 
-    const uint16_t address          = std::stoi(tokens[2]);
-    const uint8_t lower_address_reg = address & 0xFF;
-    const uint8_t upper_address_reg = (address >> 8) & 0xFF;
-    const uint8_t instruction_reg   = (opcode << 2) | source_reg;
+    const uint8_t address          = std::stoi(tokens[2]);
+    const uint8_t instruction_reg   = (opcode << 4) | source_reg;
 
-    return {instruction_reg, lower_address_reg, upper_address_reg};
+    return {instruction_reg, address};
 }
 
 // format opcode address imm
 vector<uint8_t> serialize_store_imm_address_type_instruction(
     const uint8_t opcode, const std::vector<std::string> &tokens) {
     const uint8_t immediate_val     = std::stoi(tokens[1]);
-    const uint16_t address          = std::stoi(tokens[2]);
-    const uint8_t lower_address_reg = address & 0xFF;
-    const uint8_t upper_address_reg = (address >> 8) & 0xFF;
+    const uint8_t address          = std::stoi(tokens[2]);
     const uint8_t instruction_reg   = opcode << 2;
 
-    return {instruction_reg, immediate_val, lower_address_reg,
-            upper_address_reg};
+    return {instruction_reg, immediate_val, address};
 }
 
 // format: opcode addr
@@ -103,10 +96,8 @@ vector<uint8_t>
 serialize_branch_type_instruction(const uint8_t opcode,
                                   const std::vector<std::string> &tokens) {
     const uint8_t instruction_reg   = opcode << 2;
-    const uint16_t address          = std::stoi(tokens[1]);
-    const uint8_t lower_address_reg = address & 0xFF;
-    const uint8_t upper_address_reg = (address >> 8) & 0xFF;
-    return {instruction_reg, lower_address_reg, upper_address_reg};
+    const uint8_t address          = std::stoi(tokens[1]);
+    return {instruction_reg, address};
 }
 
 // format: opcode rs rd
@@ -141,15 +132,41 @@ serialize_out_instruction(const uint8_t opcode,
 }
 
 std::string deserialize_register(const uint8_t rom_byte) {
-    uint8_t reg = rom_byte & 0x03;
-    if (reg == 0) {
+    uint8_t reg = rom_byte & 0x04;
+    if (reg == 0b0001) {
         return "A";
-    } else if (reg == 1) {
+    } else if (reg == 0b0010) {
         return "B";
-    } else if (reg == 2) {
-        return "L";
+    } else if (reg == 0b0100) {
+        return "C";
+    } else if (reg == 0b1000) {
+        return "D";
     } else {
-        return "U";
+        return "INVALID REG";
+    }
+}
+
+std::string deserialize_registers(const uint8_t rom_byte,bool get_second=false) {
+    uint8_t reg = rom_byte & 0x04;
+    if (get_second) {reg>>=2;}
+    // reg>>(get_second<<1); //this is the same I think
+    reg&=0b11;
+    switch (reg) {
+        case 0b00: return "A";
+        case 0b01: return "B";
+        case 0b10: return "C";
+        case 0b11: return "D";
+        default: return "INVALID REG";
+    }
+}
+
+std::string deserialize_condition(const uint8_t rom_byte) {
+    switch (rom_byte) {
+        case cpu::CONDITION::ZERO: return "ZERO";
+        case cpu::CONDITION::OVF: return "OVF";
+        case cpu::CONDITION::ALU_ZERO: return "ALU_ZERO";
+        case cpu::CONDITION::EQ: return "EQ";
+        default: return "INVALID CONDITION";
     }
 }
 
@@ -164,11 +181,10 @@ std::string deserialize_byte(const uint8_t rom_byte) {
     return stream.str();
 }
 
-std::string deserialize_address_value(const uint8_t lower_byte,
-                                      const uint8_t upper_byte) {
-    const uint16_t address = (upper_byte << 8) | lower_byte;
+std::string deserialize_address_value(const uint8_t byte) {
+    const uint8_t address = byte;
     std::stringstream stream;
-    stream << "x" << std::setfill('0') << std::setw(address <= 255 ? 2 : 4)
+    stream << "x" << std::setfill('0') << std::setw(2)//was address <= 255 ? 2 : 4
            << std::right << std::hex << static_cast<int>(address);
     return stream.str();
 }
@@ -178,6 +194,17 @@ vector<uint8_t> serialize_instruction(const vector<std::string> &symbols) {
     const cpu::Opcode opcode = cpu::get_opcode_of_instruction(symbols);
 
     switch (opcode) {
+    case cpu::Opcode::HLT:
+        return serialize_basic_instruction(cpu::M_HLT);
+    case cpu::Opcode::INC:
+        return serialize_reg_type_instruction(cpu::M_INC, symbols);
+    case cpu::Opcode::STM:
+        return serialize_reg_type_instruction(cpu::M_STM, symbols);
+    case cpu::Opcode::JMP:
+        return serialize_reg_type_instruction(cpu::M_JMP, symbols);
+    case cpu::Opcode::JIF:
+        return serialize_reg_type_instruction(cpu::M_JIF, symbols);
+
     case cpu::Opcode::ADD:
         return serialize_reg_type_instruction(cpu::M_ADD, symbols);
     case cpu::Opcode::ADDI:
@@ -262,12 +289,14 @@ vector<uint8_t> serialize_instruction(const vector<std::string> &symbols) {
 std::vector<std::string>
 deserialize_instruction(const std::vector<uint8_t> bytes) {
 
-    const cpu::Opcode opcode        = cpu::get_opcode_for_value(bytes[0] >> 2);
+    const cpu::Opcode opcode        = cpu::get_opcode_for_value(bytes[0] >> 4);
     const std::string opcode_string = cpu::get_string_for_opcode(opcode);
 
     switch (opcode) {
     case cpu::Opcode::ADD:
     case cpu::Opcode::SUB:
+        return {opcode_string, deserialize_registers(bytes[0]),deserialize_registers(bytes[0],true)};
+    case cpu::Opcode::INC:
     case cpu::Opcode::ADDC:
     case cpu::Opcode::SUBC:
     case cpu::Opcode::NOT:
@@ -287,6 +316,7 @@ deserialize_instruction(const std::vector<uint8_t> bytes) {
     case cpu::Opcode::XORI:
     case cpu::Opcode::LDI:
     case cpu::Opcode::STI:
+    case cpu::Opcode::STM:
         return {opcode_string, deserialize_register(bytes[0]),
                 deserialize_imm_value(bytes[1])};
 
@@ -298,7 +328,10 @@ deserialize_instruction(const std::vector<uint8_t> bytes) {
     case cpu::Opcode::BNE:
     case cpu::Opcode::BGT:
     case cpu::Opcode::BGTE:
-        return {opcode_string, deserialize_address_value(bytes[1], bytes[2])};
+    case cpu::Opcode::JMP:
+        return {opcode_string, deserialize_address_value(bytes[1])};
+    case cpu::Opcode::JIF:
+        return {opcode_string, deserialize_condition(bytes[0]) ,deserialize_address_value(bytes[1])};
 
     case cpu::Opcode::MOVA:
         return {opcode_string, "A", deserialize_register(bytes[0])};
@@ -308,16 +341,17 @@ deserialize_instruction(const std::vector<uint8_t> bytes) {
     case cpu::Opcode::LDA:
     case cpu::Opcode::STA:
         return {opcode_string, deserialize_register(bytes[0]),
-                deserialize_address_value(bytes[1], bytes[2])};
+                deserialize_address_value(bytes[1])};
 
     case cpu::Opcode::STIA:
         return {opcode_string, deserialize_imm_value(bytes[1]),
-                deserialize_address_value(bytes[2], bytes[3])};
+                deserialize_address_value(bytes[2])};
 
     case cpu::Opcode::CMP:
     case cpu::Opcode::NOP:
     case cpu::Opcode::SETC:
     case cpu::Opcode::CLC:
+    case cpu::Opcode::HLT:
         return {opcode_string};
 
     case cpu::Opcode::OUT:

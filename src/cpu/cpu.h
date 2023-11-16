@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 namespace cpu {
 
@@ -26,6 +27,14 @@ constexpr uint16_t L_REG = 0x02;
 constexpr uint16_t U_REG = 0x03;
 
 // Micro-Instructions
+//ADDED
+constexpr uint16_t U_HLT        = 0x0213;
+constexpr uint16_t U_JMP        = 0x0213;
+constexpr uint16_t U_JIF        = 0x0213;
+constexpr uint16_t U_STM        = 0x0213;
+constexpr uint16_t U_INC        = 0x0213;
+
+
 constexpr uint16_t U_BOOT        = 0x0212;
 constexpr uint16_t U_UCODE_RESET = 0xFEFF;
 constexpr uint16_t U_FETCH       = 0x0312;
@@ -224,8 +233,6 @@ const MicrocodeInstruction MI_NOP        = {Microcode::NOP, U_NOP, "nop"};
 const MicrocodeInstruction MI_IMM_TO_REG = {Microcode::IMM_TO_REG, U_IMM_TO_REG,
                                             "imm_to_reg"};
 //ADDED
-const MicrocodeInstruction MI_HLT      = {Microcode::HLT, U_HLT, "hlt"};
-
 const MicrocodeInstruction MI_HLT	= {Microcode::HLT, U_HLT, "hlt"};
 const MicrocodeInstruction MI_INC	= {Microcode::INC, U_INC, "inc"};
 const MicrocodeInstruction MI_STM	= {Microcode::STM, U_STM, "stm"};
@@ -259,6 +266,13 @@ const Instruction I_INC	= {Opcode::INC, M_INC, "inc",1};
 const Instruction I_STM	= {Opcode::STM, M_STM, "stm",2};
 const Instruction I_JMP	= {Opcode::JMP, M_JMP, "jmp",2};
 const Instruction I_JIF	= {Opcode::JIF, M_JIF, "jif",2};
+enum CONDITION: uint8_t {
+    ZERO=0,//a==0
+    NEG=0b0001,
+    OVF=0b0010,
+    ALU_ZERO=0b0100,
+    EQ=0b1000,
+};
 
 const Instruction I_ADD  = {Opcode::ADD, M_ADD, "add", 1};
 const Instruction I_ADDI = {Opcode::ADDI, M_ADDI, "addi", 2};

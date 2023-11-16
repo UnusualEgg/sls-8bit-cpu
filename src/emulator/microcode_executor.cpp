@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <array>
 
 #include <cpu/cpu.h>
 #include <cpu/state.h>

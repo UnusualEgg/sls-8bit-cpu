@@ -7,6 +7,8 @@
 #include <string.h>
 #include <tuple>
 #include <vector>
+#include <algorithm> //for copy_n
+#include <array>
 
 #include <cpu/cpu.h>
 
@@ -72,7 +74,7 @@ std::array<uint16_t, cpu::DECODER_SIZE> generate_decode_logic() {
             for (const cpu::Opcode opcode : opcodes) {
                 std::vector<uint16_t> microcode;
 
-                switch (opcode) {
+                switch (opcode) {//TODO redo whole microcode encoding
                 case cpu::Opcode::ADD:
                     microcode.push_back(cpu::U_ADD | reg_en(reg));
                     break;
