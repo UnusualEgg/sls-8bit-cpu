@@ -11,6 +11,9 @@ integration_tests
 !assembler/
 !emulator/
 
+*.a
+settings.json
+
 
 CMakeLists.txt.user
 CMakeCache.txt
