@@ -14,6 +14,7 @@ FetchContent_MakeAvailable(googletest)
 project(cpu)
 
 add_compile_options(-Wall -Werror -Wextra -Werror=switch-enum)
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} Wall -Werror -Wextra -Werror=switch-enum")
 
 add_subdirectory(src)
 add_subdirectory(test)

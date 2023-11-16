@@ -7,21 +7,24 @@
 #include <cpu/state.h>
 
 #include "renderer.h"
+//TODO: maybe in the future switch to ncurses for the refesh
+constexpr char CLS[] = "\e[2J";
 
 namespace renderer {
 
 void reset_screen() {
     // clears screen
-    std::cout << "\033[2J";
+    std::cout << CLS;
 
     // moves cursor to (0, 0)
-    std::cout << "\033[H";
+    std::cout << "\e[H";
 }
 
 void hide_cursor() { std::cout << "\e[?25l"; }
+void show_cursor() { std::cout << "\e[?25h"; }
 
 void move_cursor(const int row, const int col) {
-    std::cout << "\033[" << std::to_string(row) << ";" << std::to_string(col)
+    std::cout << "\e[" << std::to_string(row) << ";" << std::to_string(col)
               << "H";
 }
 
@@ -242,7 +245,8 @@ void render_footer(const int row, const int col, const float cpi,
             "program_size : " + std::to_string(prog_rom_size) + " bytes",
         });
 }
-
+void init_render() {hide_cursor();}
+void deinit_render() {show_cursor();}
 void render(const State previous_state, const State current_state,
             const cpu::Opcode current_opcode,
             const uint16_t current_opcode_address, const int clock,
@@ -251,7 +255,7 @@ void render(const State previous_state, const State current_state,
             const std::vector<uint8_t> &prog_rom,
             const std::array<uint16_t, cpu::DECODER_SIZE> &decoder_rom) {
     reset_screen();
-    hide_cursor();
+    //hide_cursor();
 
     render_text_box(2, 0,
                     {"~~~~~~~~~~~~~~~~~~~~ EMULATOR ~~~~~~~~~~~~~~~~~~~~"});
@@ -268,5 +272,6 @@ void render(const State previous_state, const State current_state,
     render_text_box(26, 0, {"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"});
     render_footer(27, 0, cpi, total_number_clock_cycles,
                   total_number_instructions, static_cast<int>(prog_rom.size()));
+    //TODO: render output from the out thingy aslo maybe make it optional to use this render function
 }
 } // namespace renderer

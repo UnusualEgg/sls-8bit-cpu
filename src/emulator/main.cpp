@@ -7,6 +7,8 @@
 #include <cpu/cpu.h>
 #include <cpu/state.h>
 #include <decoder/decoder.h>
+#include <stdlib.h>//for atexit
+#include <signal.h>//for signal(SIGINT,exit_handler)
 
 #include "emulator.h"
 #include "microcode_executor.h"
@@ -26,9 +28,17 @@ ProgramRom get_prog_rom(const std::string &hex_file_name) {
         while (ss >> word) {
             prog_rom.push_back(static_cast<uint8_t>(std::stoi(word, 0, 16)));
         }
+    } else {
+	    std::cerr << "File not open. Does it exist?\n";exit(EXIT_FAILURE);
     }
+    
 
     return prog_rom;
+}
+
+void sigint_handle(__attribute__((unused)) int _param) {
+	renderer::deinit_render();
+	exit(SIGINT);
 }
 
 int main(int argc, char *argv[]) {
@@ -36,6 +46,8 @@ int main(int argc, char *argv[]) {
         printf("Format: [input].hex\n");
         return 1;
     }
+    signal(SIGINT,sigint_handle);
+    atexit(renderer::deinit_render);
     const std::string hex_file_name = argv[1];
 
     const DecoderRom decoder_rom = decoder::generate_decode_logic();

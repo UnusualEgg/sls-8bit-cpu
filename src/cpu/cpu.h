@@ -19,6 +19,9 @@ constexpr uint16_t RAM_SIZE = 32768;
 // Register Macros
 constexpr uint16_t A_REG = 0x00;
 constexpr uint16_t B_REG = 0x01;
+constexpr uint16_t C_REG = 0x03;
+constexpr uint16_t D_REG = 0x04;
+//TODO: remove these and references to them
 constexpr uint16_t L_REG = 0x02;
 constexpr uint16_t U_REG = 0x03;
 
@@ -27,16 +30,22 @@ constexpr uint16_t U_BOOT        = 0x0212;
 constexpr uint16_t U_UCODE_RESET = 0xFEFF;
 constexpr uint16_t U_FETCH       = 0x0312;
 constexpr uint16_t U_NOP         = 0x030A;
+//done
 constexpr uint16_t U_IMM_TO_REG  = 0x0312;
+
 constexpr uint16_t U_A_EN        = 0x0090;
 constexpr uint16_t U_B_EN        = 0x0050;
 constexpr uint16_t U_L_EN        = 0x00D0;
 constexpr uint16_t U_U_EN        = 0x0030;
 constexpr uint16_t U_MOV_A       = 0x091A;
 constexpr uint16_t U_MOV_B       = 0xA51A;
+//TODO
 constexpr uint16_t U_ADD         = 0x991A;
+
 constexpr uint16_t U_ADDC        = 0x911A;
+//TODO
 constexpr uint16_t U_SUB         = 0x611A;
+
 constexpr uint16_t U_SUBC        = 0x691A;
 constexpr uint16_t U_AND         = 0xB51A;
 constexpr uint16_t U_OR          = 0xE51A;
@@ -45,21 +54,26 @@ constexpr uint16_t U_SHL         = 0xC91A;
 constexpr uint16_t U_SHLC        = 0xC11A;
 constexpr uint16_t U_NOT_A       = 0x051A;
 constexpr uint16_t U_NOT_B       = 0x551A;
+//TODO maybe
 constexpr uint16_t U_CMP         = 0x690A;
 constexpr uint16_t U_ST_A        = 0xF50C;
 constexpr uint16_t U_ST_B        = 0xA50C;
 constexpr uint16_t U_STI         = 0x0304;
+//TODO
 constexpr uint16_t U_LD          = 0x0318;
 constexpr uint16_t U_B           = 0x03FA;
 constexpr uint16_t U_OUTI        = 0x0303;
 
-constexpr uint16_t U_IGNORE_REG_MASK = 0xFE1F;
+constexpr uint16_t U_IGNORE_REG_MASK = 0xFF00;
 
 // Macro-Instructions
-constexpr uint8_t M_ADD  = 0;
+constexpr uint8_t M_HLT  = 0b0001;
+
+constexpr uint8_t M_INC  = 0b1000;
+constexpr uint8_t M_ADD  = 0b0100;
 constexpr uint8_t M_ADDI = 1;
 constexpr uint8_t M_ADDC = 2;
-constexpr uint8_t M_SUB  = 3;
+constexpr uint8_t M_SUB  = 0b110;
 constexpr uint8_t M_SUBI = 4;
 constexpr uint8_t M_SUBC = 5;
 constexpr uint8_t M_NOT  = 6;
@@ -71,14 +85,17 @@ constexpr uint8_t M_XOR  = 11;
 constexpr uint8_t M_XORI = 12;
 constexpr uint8_t M_SHL  = 13;
 constexpr uint8_t M_SHLC = 14;
-constexpr uint8_t M_LDI  = 15;
+constexpr uint8_t M_LDI  = 0b0010;
 constexpr uint8_t M_LD   = 16;
-constexpr uint8_t M_LDA  = 17;
+constexpr uint8_t M_LDA  = 0b1001;
 constexpr uint8_t M_ST   = 18;
+constexpr uint8_t M_STM  = 0b1010;//images, sound devices(rhym alliteration), tone, word choice
 constexpr uint8_t M_STA  = 19;
 constexpr uint8_t M_STI  = 20;
 constexpr uint8_t M_STIA = 21;
 constexpr uint8_t M_CMP  = 22;
+constexpr uint8_t M_JMP  = 0b0110;
+constexpr uint8_t M_JIF  = 0b1110;
 constexpr uint8_t M_B    = 23;
 constexpr uint8_t M_BC   = 24;
 constexpr uint8_t M_BLT  = 25;
@@ -95,6 +112,13 @@ constexpr uint8_t M_CLC  = 35;
 constexpr uint8_t M_OUT  = 36;
 
 enum class Microcode {
+    //ADDED
+    HLT,
+    INC,
+    STM,
+    JMP,
+    JIF,
+    
     NOP,
     IMM_TO_REG,
     MOV_A,
@@ -120,6 +144,13 @@ enum class Microcode {
 };
 
 enum class Opcode : uint8_t {
+    //ADDED
+    HLT,
+    INC,
+    STM,
+    JMP,
+    JIF,
+    
     ADD,
     ADDI,
     ADDC,
@@ -192,6 +223,15 @@ std::vector<Instruction> get_instructions();
 const MicrocodeInstruction MI_NOP        = {Microcode::NOP, U_NOP, "nop"};
 const MicrocodeInstruction MI_IMM_TO_REG = {Microcode::IMM_TO_REG, U_IMM_TO_REG,
                                             "imm_to_reg"};
+//ADDED
+const MicrocodeInstruction MI_HLT      = {Microcode::HLT, U_HLT, "hlt"};
+
+const MicrocodeInstruction MI_HLT	= {Microcode::HLT, U_HLT, "hlt"};
+const MicrocodeInstruction MI_INC	= {Microcode::INC, U_INC, "inc"};
+const MicrocodeInstruction MI_STM	= {Microcode::STM, U_STM, "stm"};
+const MicrocodeInstruction MI_JMP	= {Microcode::JMP, U_JMP, "jmp"};
+const MicrocodeInstruction MI_JIF	= {Microcode::JIF, U_JIF, "jif"};
+
 const MicrocodeInstruction MI_MOV_A      = {Microcode::MOV_A, U_MOV_A, "mov_a"};
 const MicrocodeInstruction MI_MOV_B      = {Microcode::MOV_B, U_MOV_B, "mov_b"};
 const MicrocodeInstruction MI_ADD        = {Microcode::ADD, U_ADD, "add"};
@@ -212,6 +252,13 @@ const MicrocodeInstruction MI_STI        = {Microcode::STI, U_STI, "sti"};
 const MicrocodeInstruction MI_LD         = {Microcode::LD, U_LD, "ld"};
 const MicrocodeInstruction MI_B          = {Microcode::B, U_B, "b"};
 const MicrocodeInstruction MI_OUTI       = {Microcode::OUTI, U_OUTI, "outi"};
+
+//ADDED
+const Instruction I_HLT  = {Opcode::HLT, M_HLT, "hlt", 1};
+const Instruction I_INC	= {Opcode::INC, M_INC, "inc",1};
+const Instruction I_STM	= {Opcode::STM, M_STM, "stm",2};
+const Instruction I_JMP	= {Opcode::JMP, M_JMP, "jmp",2};
+const Instruction I_JIF	= {Opcode::JIF, M_JIF, "jif",2};
 
 const Instruction I_ADD  = {Opcode::ADD, M_ADD, "add", 1};
 const Instruction I_ADDI = {Opcode::ADDI, M_ADDI, "addi", 2};

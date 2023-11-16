@@ -1,0 +1,2 @@
+/usr/bin/ar qc libassembler.a CMakeFiles/assembler.dir/assembler.cpp.o CMakeFiles/assembler.dir/tokenizer.cpp.o CMakeFiles/assembler.dir/define_table.cpp.o CMakeFiles/assembler.dir/label_table.cpp.o CMakeFiles/assembler.dir/macro.cpp.o CMakeFiles/assembler.dir/macro_generator.cpp.o
+/usr/bin/ranlib libassembler.a

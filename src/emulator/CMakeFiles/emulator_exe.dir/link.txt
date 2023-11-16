@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/emulator_exe.dir/main.cpp.o -o /home/unusualegg/prg/cpp/emulator  libemulator.a ../decoder/libdecoder.a ../cpu/libcpu.a 

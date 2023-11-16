@@ -11,6 +11,7 @@ void render(const State previous_state, const State current_state,
             const int total_number_instructions,
             const std::vector<uint8_t> &prog_rom,
             const std::array<uint16_t, cpu::DECODER_SIZE> &decoder_rom);
+void init_render();void deinit_render();
 }
 
 #endif

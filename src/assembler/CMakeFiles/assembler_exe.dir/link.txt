@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/assembler_exe.dir/main.cpp.o -o /home/unusualegg/prg/cpp/assembler  libassembler.a ../cpu/libcpu.a 

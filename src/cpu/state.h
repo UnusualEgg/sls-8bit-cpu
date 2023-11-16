@@ -15,6 +15,8 @@ struct State {
     uint8_t lower_register;
     uint8_t a_register;
     uint8_t b_register;
+    uint8_t c_register;
+    uint8_t d_register;
     uint8_t port_0;
     uint8_t port_1;
 
@@ -22,5 +24,5 @@ struct State {
 };
 
 void print_state(State state);
-
+uint8_t get_regn(uint8_t n);
 #endif

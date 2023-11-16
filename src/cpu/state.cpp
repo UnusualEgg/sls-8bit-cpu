@@ -6,7 +6,7 @@
 State::State()
     : program_counter(0), microcode_counter(0), instruction_register(0),
       flag_register(0), upper_register(0), lower_register(0), a_register(0),
-      b_register(0), port_0(0), port_1(0) {}
+      b_register(0), c_register(0), d_register(0), port_0(0), port_1(0) {}
 
 void print_state(State state) {
     std::cout << "~~~ Counters ~~~" << std::endl;
